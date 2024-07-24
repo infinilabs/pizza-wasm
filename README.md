@@ -2,8 +2,17 @@
 
 ### 🛠️ Build with `wasm-pack build`
 
+
+Build wasm
+
 ```
 wasm-pack build
+```
+
+Start web
+
+```
+npm run start
 ```
 
 ### 🔬 Test in Headless Browsers with `wasm-pack test`
