@@ -1,5 +1,5 @@
 {
-  "name": "create-wasm-app",
+  "name": "pizza-wasm-app",
   "version": "0.1.0",
   "description": "create an app to consume rust-generated wasm packages",
   "main": "index.js",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rustwasm/create-wasm-app.git"
+    "url": "git+https://github.com/infinilabs/pizza-wasm-app.git"
   },
   "keywords": [
     "webassembly",
@@ -20,12 +20,12 @@
     "rust",
     "webpack"
   ],
-  "author": "Ashley Williams <ashley666ashley@gmail.com>",
+  "author": "INFINI Labs <hello@infini.ltd>",
   "license": "(MIT OR Apache-2.0)",
   "bugs": {
-    "url": "https://github.com/rustwasm/create-wasm-app/issues"
+    "url": "https://github.com/infinilabs/pizza-wasm-app/issues"
   },
-  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
+  "homepage": "https://github.com/rustwasm/pizza-wasm-app#readme",
   "dependencies": {
     "pizza-wasm": "file:../pkg"
   },

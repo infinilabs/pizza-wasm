@@ -1,7 +1,15 @@
+#![allow(unused_variables)]
+#![no_std]
+
 mod utils;
+
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use core::fmt::{Display, Formatter};
 use cfg_if::cfg_if;
 extern crate cfg_if;
 use wasm_bindgen::prelude::*;
+use alloc::format;
 
 cfg_if! {
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -14,6 +22,17 @@ cfg_if! {
 }
 
 
+extern crate web_sys;
+extern crate alloc;
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+    macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
+
 #[wasm_bindgen]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -22,12 +41,24 @@ pub enum Cell {
     Alive = 1,
 }
 
+
+impl Cell {
+    fn toggle(&mut self) {
+        *self = match *self {
+            Cell::Dead => Cell::Alive,
+            Cell::Alive => Cell::Dead,
+        };
+    }
+}
+
 #[wasm_bindgen]
 pub struct Universe {
     width: u32,
     height: u32,
     cells: Vec<Cell>,
 }
+
+
 
 #[wasm_bindgen]
 impl Universe {
@@ -54,7 +85,6 @@ impl Universe {
 
     pub fn tick(&mut self) {
         let mut next = self.cells.clone();
-
         for row in 0..self.height {
             for col in 0..self.width {
                 let idx = self.get_index(row, col);
@@ -78,9 +108,12 @@ impl Universe {
                     (otherwise, _) => otherwise,
                 };
 
+                log!("    it becomes {:?}", next_cell);
+
                 next[idx] = next_cell;
             }
         }
+
 
         self.cells = next;
     }
@@ -106,24 +139,40 @@ impl Universe {
         }
     }
 
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
+    pub fn cells(&self) -> *const Cell {
+        self.cells.as_ptr()
+    }
+
     pub fn render(&self) -> String {
         self.to_string()
     }
 
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        self.cells[idx].toggle();
+    }
 }
 
-use std::fmt;
 
-impl fmt::Display for Universe {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+
+impl Display for Universe {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         for line in self.cells.as_slice().chunks(self.width as usize) {
-            for &cell in line {
-                let symbol = if cell == Cell::Dead { '◻' } else { '■' };
-                write!(f, "{}", symbol)?;
-            }
-            write!(f, "\n")?;
-        }
+                    for &cell in line {
+                        let symbol = if cell == Cell::Dead { '◻' } else { '■' };
+                        write!(f, "{}", symbol)?;
+                    }
+                    write!(f, "\n")?;
+                }
 
-        Ok(())
+                Ok(())
     }
 }
