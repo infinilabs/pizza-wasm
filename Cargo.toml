@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["medcl <m@medcl.net>"]
 edition = "2018"
 
+[workspace]
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -32,3 +34,12 @@ wasm-bindgen-test = "0.3.34"
 #opt-level = "z"
 opt-level = "s"
 lto = true
+
+
+
+[build]
+target = ["wasm32-unknown-unknown"]
+
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-feature=+simd128"]
+
