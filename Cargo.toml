@@ -3,6 +3,8 @@ name = "pizza-wasm"
 version = "0.1.0"
 authors = ["medcl <m@medcl.net>"]
 edition = "2018"
+keywords = ["pizza", "wasm", "web", "search"]
+categories = ["web-programming"]
 
 [workspace]
 
