@@ -34,7 +34,7 @@ clean:
 	rm -f pkg/*
 
 serve:
-	(cd web && npm run start)
+	(cd web && npm install && npm run start)
 
 # You can add additional phony targets as needed
 .PHONY: build
