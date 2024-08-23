@@ -1,23 +1,19 @@
+
+
 build:
 	wasm-pack build --release
 
 optimize:
-	npm install -g binaryen
 	wasm-opt -Oz -all --dce pkg/pizza_wasm_bg.wasm -o pkg/pizza-optimized.wasm
-	cargo install wasm-snip
 	wasm-snip pkg/pizza_wasm_bg.wasm -o pkg/pizza-snipped.wasm
 
 inspect:
-	#npm install -g @webassemblyjs/wabt
-	brew install wabt
 	wasm-objdump -x pkg/pizza_wasm_bg.wasm
 
 bloat:
-	cargo install cargo-bloat
 	cargo bloat --release --target wasm32-unknown-unknown
 
 twiggy:
-	cargo install twiggy
 	twiggy top pkg/pizza_wasm_bg.wasm
 	twiggy dominators pkg/pizza_wasm_bg.wasm
 
@@ -34,7 +30,18 @@ clean:
 	rm -f pkg/*
 
 serve:
-	(cd web && npm install && npm run start)
+	(cd web && npm run start)
+
+# Init dev depends
+init:
+	cargo install wasm-pack
+	(cd web && npm install)
+	npm install -g binaryen
+	cargo install wasm-snip
+	cargo install cargo-bloat
+	cargo install twiggy
+	#mac only
+	brew install wabt
 
 # You can add additional phony targets as needed
 .PHONY: build
