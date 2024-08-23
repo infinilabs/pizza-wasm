@@ -32,6 +32,9 @@ clean:
 serve:
 	(cd web && npm run start)
 
+dist:
+	(cd web && rm -f dist/*  && npm run build)
+
 # Init dev depends
 init:
 	cargo install wasm-pack
