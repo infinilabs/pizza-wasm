@@ -1,15 +1,35 @@
-#![allow(unused_variables)]
 #![no_std]
+extern crate alloc;
 
-mod utils;
-
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use core::fmt::{Display, Formatter};
+use alloc::string::String;
+use alloc::string::ToString;
 use cfg_if::cfg_if;
+use core::fmt::Display;
+use core::fmt::Formatter;
 extern crate cfg_if;
-use wasm_bindgen::prelude::*;
+use alloc::boxed::Box;
 use alloc::format;
+use alloc::sync::Arc;
+use hashbrown::HashMap;
+use pizza_engine as engine;
+use pizza_engine::dictionary::DatTermDict;
+use pizza_engine::document::Document;
+use pizza_engine::document::FieldValue;
+use pizza_engine::document::Property;
+use pizza_engine::store::MemoryStore;
+use pizza_engine::Engine;
+use pizza_engine::EngineBuilder;
+use spin::RwLock;
+use wasm_bindgen::prelude::wasm_bindgen;
+
+use pizza_engine::context::Snapshot;
+use pizza_engine::search::OriginalQuery;
+use pizza_engine::search::QueryContext;
+use pizza_engine::search::Searcher;
+
+use pizza_engine::analysis::AnalyzerConfig;
+use pizza_stemmers::algorithms;
+use pizza_stemmers::StemmerTokenizer;
 
 cfg_if! {
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -21,158 +41,130 @@ cfg_if! {
     }
 }
 
-
-extern crate web_sys;
-extern crate alloc;
-
-// A macro to provide `println!(..)`-style syntax for `console.log` logging.
-    macro_rules! log {
-    ( $( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $( $t )* ).into());
-    }
-}
-
-
 #[wasm_bindgen]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Cell {
-    Dead = 0,
-    Alive = 1,
-}
-
-
-impl Cell {
-    fn toggle(&mut self) {
-        *self = match *self {
-            Cell::Dead => Cell::Alive,
-            Cell::Alive => Cell::Dead,
-        };
-    }
+pub struct Pizza {
+    engine: Engine<DatTermDict>,
+    snapshot: Snapshot,
+    searcher: Searcher,
 }
 
 #[wasm_bindgen]
-pub struct Universe {
-    width: u32,
-    height: u32,
-    cells: Vec<Cell>,
-}
+impl Pizza {
+    pub fn new() -> Pizza {
+        let mut builder = EngineBuilder::new();
 
+        //init analyzers
+        let tokenizer_name = "snowball_english_porter_2";
+        let tokenizer = StemmerTokenizer::new(algorithms::english_porter_2);
+        builder.register_plugin(tokenizer_name.into(), Box::new(tokenizer));
 
+        let mut analyzers = HashMap::new();
+        let mut analyzer = AnalyzerConfig::new();
+        analyzer.set_tokenizer(tokenizer_name);
+        analyzers.insert(tokenizer_name, analyzer); //let the analyzer use the same name as tokenizer
+        builder.set_analyzer_configs(analyzers);
 
-#[wasm_bindgen]
-impl Universe {
-    fn get_index(&self, row: u32, column: u32) -> usize {
-        (row * self.width + column) as usize
-    }
+        //init schema
+        let mut schema = engine::document::Schema::new();
+        schema
+            .properties
+            .add_property("title", Property::as_text(Some("standard")));
 
-    fn live_neighbor_count(&self, row: u32, column: u32) -> u8 {
-        let mut count = 0;
-        for delta_row in [self.height - 1, 0, 1].iter().cloned() {
-            for delta_col in [self.width - 1, 0, 1].iter().cloned() {
-                if delta_row == 0 && delta_col == 0 {
-                    continue;
-                }
+        schema.freeze();
+        builder.set_schema(schema);
 
-                let neighbor_row = (row + delta_row) % self.height;
-                let neighbor_col = (column + delta_col) % self.width;
-                let idx = self.get_index(neighbor_row, neighbor_col);
-                count += self.cells[idx] as u8;
-            }
-        }
-        count
-    }
+        builder.set_term_dict(DatTermDict::new(0));
 
-    pub fn tick(&mut self) {
-        let mut next = self.cells.clone();
-        for row in 0..self.height {
-            for col in 0..self.width {
-                let idx = self.get_index(row, col);
-                let cell = self.cells[idx];
-                let live_neighbors = self.live_neighbor_count(row, col);
+        let memory_store = MemoryStore::new();
+        builder.set_data_store(Arc::new(RwLock::new(memory_store)));
 
-                let next_cell = match (cell, live_neighbors) {
-                    // Rule 1: Any live cell with fewer than two live neighbours
-                    // dies, as if caused by underpopulation.
-                    (Cell::Alive, x) if x < 2 => Cell::Dead,
-                    // Rule 2: Any live cell with two or three live neighbours
-                    // lives on to the next generation.
-                    (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
-                    // Rule 3: Any live cell with more than three live
-                    // neighbours dies, as if by overpopulation.
-                    (Cell::Alive, x) if x > 3 => Cell::Dead,
-                    // Rule 4: Any dead cell with exactly three live neighbours
-                    // becomes a live cell, as if by reproduction.
-                    (Cell::Dead, 3) => Cell::Alive,
-                    // All other cells remain in the same state.
-                    (otherwise, _) => otherwise,
-                };
+        let mut engine = builder.build();
+        engine.start();
 
-                log!("    it becomes {:?}", next_cell);
+        let searcher = engine.acquire_searcher();
+        let snapshot = engine.create_snapshot();
 
-                next[idx] = next_cell;
-            }
-        }
-
-
-        self.cells = next;
-    }
-
-    pub fn new() -> Universe {
-        let width = 64;
-        let height = 64;
-
-        let cells = (0..width * height)
-            .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-            })
-            .collect();
-
-        Universe {
-            width,
-            height,
-            cells,
+        Pizza {
+            engine,
+            snapshot,
+            searcher,
         }
     }
 
-    pub fn width(&self) -> u32 {
-        self.width
+    pub fn load(&mut self, data: &str) -> bool {
+        let mut writer = self.engine.acquire_writer();
+
+        let mut id = 0;
+        for line in data.lines() {
+            id += 1;
+            let doc = Document {
+                id: id,
+                key: None,
+                fields: {
+                    let mut m = HashMap::new();
+                    m.insert("title".to_string(), FieldValue::Text(line.to_string()));
+                    m
+                },
+            };
+
+            writer.add_document(doc);
+        }
+
+        writer.flush();
+        writer.commit();
+
+        //update snapshot
+        let snapshot = self.engine.create_snapshot();
+        self.snapshot = snapshot;
+        // web_sys::console::log_1(&format!("load finished, docs: {}, bytes: {:?}",id,data.len()).into());
+        true
     }
 
-    pub fn height(&self) -> u32 {
-        self.height
-    }
+    pub fn search(&self, query_string: &str) -> String {
+        // Step 1: Initialize the original query and query context
+        let original_query = OriginalQuery::QueryString(query_string.to_string());
 
-    pub fn cells(&self) -> *const Cell {
-        self.cells.as_ptr()
+        let mut query_context = QueryContext::new(original_query, true);
+        query_context.default_field = "title".into();
+
+        // Step 2: Execute the query
+        let result = self
+            .searcher
+            .parse_and_query(&query_context, &self.snapshot)
+            .unwrap();
+
+        // Step 3: Sort the documents by relevance (or other criteria)
+        let mut docs = result.dump();
+        docs.sort();
+
+        // Step 4: Prepare the output string
+        let mut output = format!("Total Hits: {}\n", result.total_hits);
+
+        // Step 5: Iterate through the hits and append details to the output string
+        for hit in result.hits {
+            output.push_str(&format!(
+                "- Document ID: {}, Score: {}\n",
+                hit.doc_id, hit.score
+            ));
+        }
+
+        // Step 6: Optionally, include explanations if available
+        if let Some(explain) = result.explains {
+            output.push_str(&format!("Explanations: {}\n", explain));
+        }
+
+        // Step 7: Return the prettified and combined search results
+        output
     }
 
     pub fn render(&self) -> String {
         self.to_string()
     }
-
-    pub fn toggle_cell(&mut self, row: u32, column: u32) {
-        let idx = self.get_index(row, column);
-        self.cells[idx].toggle();
-    }
 }
 
-
-
-impl Display for Universe {
+impl Display for Pizza {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        for line in self.cells.as_slice().chunks(self.width as usize) {
-                    for &cell in line {
-                        let symbol = if cell == Cell::Dead { '◻' } else { '■' };
-                        write!(f, "{}", symbol)?;
-                    }
-                    write!(f, "\n")?;
-                }
-
-                Ok(())
+        write!(f, "Hello world\n")?;
+        Ok(())
     }
 }
