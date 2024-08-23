@@ -1,0 +1,26 @@
+{
+  "name": "pizza-wasm",
+  "type": "module",
+  "collaborators": [
+    "medcl <m@medcl.net>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "pizza_wasm_bg.wasm",
+    "pizza_wasm.js",
+    "pizza_wasm_bg.js",
+    "pizza_wasm.d.ts"
+  ],
+  "main": "pizza_wasm.js",
+  "types": "pizza_wasm.d.ts",
+  "sideEffects": [
+    "./pizza_wasm.js",
+    "./snippets/*"
+  ],
+  "keywords": [
+    "pizza",
+    "wasm",
+    "web",
+    "search"
+  ]
+}
