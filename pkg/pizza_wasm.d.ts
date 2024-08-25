@@ -17,7 +17,7 @@ export class Pizza {
 * @param {string} query_string
 * @returns {string}
 */
-  search(query_string: string): string;
+  search_by_query_string(query_string: string): string;
 /**
 * @returns {string}
 */

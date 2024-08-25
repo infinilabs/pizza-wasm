@@ -175,14 +175,14 @@ export class Pizza {
     * @param {string} query_string
     * @returns {string}
     */
-    search(query_string) {
+    search_by_query_string(query_string) {
         let deferred2_0;
         let deferred2_1;
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             const ptr0 = passStringToWasm0(query_string, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
             const len0 = WASM_VECTOR_LEN;
-            wasm.pizza_search(retptr, this.__wbg_ptr, ptr0, len0);
+            wasm.pizza_search_by_query_string(retptr, this.__wbg_ptr, ptr0, len0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             deferred2_0 = r0;

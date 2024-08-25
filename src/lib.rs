@@ -28,8 +28,14 @@ use pizza_engine::search::QueryContext;
 use pizza_engine::search::Searcher;
 
 use pizza_engine::analysis::AnalyzerConfig;
+
+#[cfg(feature = "stemmers")]
 use pizza_stemmers::algorithms;
+#[cfg(feature = "stemmers")]
 use pizza_stemmers::StemmerTokenizer;
+
+#[cfg(feature = "jieba")]
+use pizza_jieba::JiebaTokenizer;
 
 cfg_if! {
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -52,16 +58,33 @@ pub struct Pizza {
 impl Pizza {
     pub fn new() -> Pizza {
         let mut builder = EngineBuilder::new();
-
-        //init analyzers
-        let tokenizer_name = "snowball_english_porter_2";
-        let tokenizer = StemmerTokenizer::new(algorithms::english_porter_2);
-        builder.register_plugin(tokenizer_name.into(), Box::new(tokenizer));
-
         let mut analyzers = HashMap::new();
-        let mut analyzer = AnalyzerConfig::new();
-        analyzer.set_tokenizer(tokenizer_name);
-        analyzers.insert(tokenizer_name, analyzer); //let the analyzer use the same name as tokenizer
+
+        //init stemmers
+        #[cfg(feature = "stemmers")]
+        {
+            let tokenizer_name = "snowball_english_porter_2";
+            let tokenizer = StemmerTokenizer::new(algorithms::english_porter_2);
+            builder.register_plugin(tokenizer_name.into(), Box::new(tokenizer));
+
+            let mut analyzer = AnalyzerConfig::new();
+            analyzer.set_tokenizer(tokenizer_name);
+            analyzer.add_token_filter("lowercase");
+            analyzers.insert(tokenizer_name, analyzer);
+        }
+
+        //init jieba
+        #[cfg(feature = "jieba")]
+        {
+            let tokenizer = JiebaTokenizer::new();
+            let tokenizer_name = "jieba";
+            builder.register_plugin(tokenizer_name, Box::new(tokenizer));
+            let mut analyzer = AnalyzerConfig::new();
+            analyzer.set_tokenizer(tokenizer_name);
+            analyzer.add_token_filter("lowercase");
+            analyzers.insert(tokenizer_name, analyzer);
+        }
+
         builder.set_analyzer_configs(analyzers);
 
         //init schema
@@ -100,6 +123,7 @@ impl Pizza {
             let doc = Document {
                 id: id,
                 key: None,
+                score: None,
                 fields: {
                     let mut m = HashMap::new();
                     m.insert("title".to_string(), FieldValue::Text(line.to_string()));
@@ -120,7 +144,8 @@ impl Pizza {
         true
     }
 
-    pub fn search(&self, query_string: &str) -> String {
+    #[cfg(feature = "query_string")]
+    pub fn search_by_query_string(&self, query_string: &str) -> String {
         // Step 1: Initialize the original query and query context
         let original_query = OriginalQuery::QueryString(query_string.to_string());
 
@@ -141,11 +166,13 @@ impl Pizza {
         let mut output = format!("Total Hits: {}\n", result.total_hits);
 
         // Step 5: Iterate through the hits and append details to the output string
-        for hit in result.hits {
-            output.push_str(&format!(
-                "- Document ID: {}, Score: {}\n",
-                hit.doc_id, hit.score
-            ));
+        if let Some(hits) = result.hits {
+            for hit in hits {
+                output.push_str(&format!(
+                    "- Document ID: {}, Score: {:?}, Source: {:?}\n",
+                    hit.id, hit.score, hit.fields
+                ));
+            }
         }
 
         // Step 6: Optionally, include explanations if available

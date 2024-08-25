@@ -41,7 +41,7 @@ async function handleInputChange(event) {
     const query = event.target.value;
 
     // Call the Wasm search function
-    const searchResults = pizza.search(query);
+    const searchResults = pizza.search_by_query_string(query);
 
     // Display the results on the page
     resultsElement.innerText = searchResults;
