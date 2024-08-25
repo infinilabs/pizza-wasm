@@ -15,9 +15,9 @@ export class Pizza {
   load(data: string): boolean;
 /**
 * @param {string} query_string
-* @returns {string}
+* @returns {any}
 */
-  search_by_query_string(query_string: string): string;
+  search_by_query_string(query_string: string): any;
 /**
 * @returns {string}
 */

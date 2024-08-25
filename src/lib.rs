@@ -33,6 +33,7 @@ use pizza_engine::analysis::AnalyzerConfig;
 use pizza_stemmers::algorithms;
 #[cfg(feature = "stemmers")]
 use pizza_stemmers::StemmerTokenizer;
+use wasm_bindgen::JsValue;
 
 #[cfg(feature = "jieba")]
 use pizza_jieba::JiebaTokenizer;
@@ -145,7 +146,7 @@ impl Pizza {
     }
 
     #[cfg(feature = "query_string")]
-    pub fn search_by_query_string(&self, query_string: &str) -> String {
+    pub fn search_by_query_string(&self, query_string: &str) -> JsValue {
         // Step 1: Initialize the original query and query context
         let original_query = OriginalQuery::QueryString(query_string.to_string());
 
@@ -157,31 +158,12 @@ impl Pizza {
             .searcher
             .parse_and_query(&query_context, &self.snapshot)
             .unwrap();
+        
+        // let json_string = serde_json::to_string(&result).unwrap();
+        // 
+        // json_string
 
-        // Step 3: Sort the documents by relevance (or other criteria)
-        let mut docs = result.dump();
-        docs.sort();
-
-        // Step 4: Prepare the output string
-        let mut output = format!("Total Hits: {}\n", result.total_hits);
-
-        // Step 5: Iterate through the hits and append details to the output string
-        if let Some(hits) = result.hits {
-            for hit in hits {
-                output.push_str(&format!(
-                    "- Document ID: {}, Score: {:?}, Source: {:?}\n",
-                    hit.id, hit.score, hit.fields
-                ));
-            }
-        }
-
-        // Step 6: Optionally, include explanations if available
-        if let Some(explain) = result.explains {
-            output.push_str(&format!("Explanations: {}\n", explain));
-        }
-
-        // Step 7: Return the prettified and combined search results
-        output
+        JsValue::from_serde(&result).unwrap()
     }
 
     pub fn render(&self) -> String {
