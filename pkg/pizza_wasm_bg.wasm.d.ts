@@ -3,7 +3,8 @@
 export const memory: WebAssembly.Memory;
 export function __wbg_pizza_free(a: number, b: number): void;
 export function pizza_new(): number;
-export function pizza_load(a: number, b: number, c: number): number;
+export function pizza_load_text_lines(a: number, b: number, c: number): number;
+export function pizza_load_json_objects_array(a: number, b: number, c: number): number;
 export function pizza_search_by_query_string(a: number, b: number, c: number): number;
 export function pizza_render(a: number, b: number): void;
 export function __wbindgen_export_0(a: number, b: number): number;

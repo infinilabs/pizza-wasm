@@ -63,8 +63,8 @@ async function loadFileAndIndex(url) {
         // Read the file content as text
         const fileContent = await response.text();
 
-        // Assuming `pizza` is your Wasm module object and it has a `load` function
-        const isLoaded = pizza.load(fileContent);
+        // Assuming `pizza` is your Wasm module object and it has a `load_text_lines` function
+        const isLoaded = pizza.load_text_lines(fileContent);
 
         if (isLoaded) {
             console.log(url,' loaded and indexed successfully.');

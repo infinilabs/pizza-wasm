@@ -12,7 +12,12 @@ export class Pizza {
 * @param {string} data
 * @returns {boolean}
 */
-  load(data: string): boolean;
+  load_text_lines(data: string): boolean;
+/**
+* @param {string} data
+* @returns {boolean}
+*/
+  load_json_objects_array(data: string): boolean;
 /**
 * @param {string} query_string
 * @returns {any}

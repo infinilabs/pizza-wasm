@@ -12,10 +12,11 @@ categories = ["web-programming"]
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["wee_alloc","query_string"]
+default = ["wee_alloc","query_string","stemmers","debug"]
 jieba=[]
 stemmers=[]
 query_string=[]
+debug=[]
 
 [dependencies]
 pizza-common = { path = "../../lib/common" }
@@ -28,8 +29,8 @@ hashbrown = { version = "0.14",default-features = false, features = ["nightly","
 
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 
-#js-sys = "0.3"
-#web-sys = {version = "0.3.69",features = ["console"]}
+js-sys = "0.3"
+web-sys = {version = "0.3",features = ["console"]}
 
 cfg-if = "1.0.0"
 wee_alloc = { optional = true,version = "0.4.5" }

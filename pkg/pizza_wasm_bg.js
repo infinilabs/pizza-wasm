@@ -165,10 +165,20 @@ export class Pizza {
     * @param {string} data
     * @returns {boolean}
     */
-    load(data) {
+    load_text_lines(data) {
         const ptr0 = passStringToWasm0(data, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.pizza_load(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.pizza_load_text_lines(this.__wbg_ptr, ptr0, len0);
+        return ret !== 0;
+    }
+    /**
+    * @param {string} data
+    * @returns {boolean}
+    */
+    load_json_objects_array(data) {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.pizza_load_json_objects_array(this.__wbg_ptr, ptr0, len0);
         return ret !== 0;
     }
     /**
@@ -207,8 +217,17 @@ export function __wbindgen_json_parse(arg0, arg1) {
     return addHeapObject(ret);
 };
 
+export function __wbindgen_string_new(arg0, arg1) {
+    const ret = getStringFromWasm0(arg0, arg1);
+    return addHeapObject(ret);
+};
+
 export function __wbindgen_object_drop_ref(arg0) {
     takeObject(arg0);
+};
+
+export function __wbg_log_b103404cc5920657(arg0) {
+    console.log(getObject(arg0));
 };
 
 export function __wbindgen_number_new(arg0) {
@@ -251,11 +270,6 @@ export function __wbg_require_cca90b1a94a0255b() { return handleError(function (
     const ret = module.require;
     return addHeapObject(ret);
 }, arguments) };
-
-export function __wbindgen_string_new(arg0, arg1) {
-    const ret = getStringFromWasm0(arg0, arg1);
-    return addHeapObject(ret);
-};
 
 export function __wbg_msCrypto_eb05e62b530a1508(arg0) {
     const ret = getObject(arg0).msCrypto;
