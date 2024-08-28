@@ -12,15 +12,18 @@ categories = ["web-programming"]
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["wee_alloc","query_string","stemmers","debug"]
+default = ["wee_alloc","load_json_objects_array","stemmers","query_string"]
 jieba=[]
 stemmers=[]
 query_string=[]
+query_dsl=[]
 debug=[]
+load_text_lines=[]
+load_json_objects_array=[]
 
 [dependencies]
 pizza-common = { path = "../../lib/common" }
-pizza-engine = { path = "../../lib/engine", default-features = false,features = ["query_string_parser"] }
+pizza-engine = { path = "../../lib/engine", default-features = false, features = ["query_string_parser"] }
 pizza-stemmers = { path = "../../contrib/stemmers" }
 pizza-jieba = { path = "../../contrib/jieba" }
 
@@ -29,8 +32,8 @@ hashbrown = { version = "0.14",default-features = false, features = ["nightly","
 
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 
-js-sys = "0.3"
-web-sys = {version = "0.3",features = ["console"]}
+#js-sys = "0.3"
+#web-sys = {version = "0.3",features = ["console"]}
 
 cfg-if = "1.0.0"
 wee_alloc = { optional = true,version = "0.4.5" }
@@ -41,10 +44,20 @@ serde_json = { version = "1.0.115",default-features = false }
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
 
+[profile.dev]
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = "unwind"
+incremental = true
+
 [profile.release]
+
 codegen-units = 1
-opt-level = 's'
-#opt-level = 'z'
+#opt-level = 's'
+opt-level = 'z'
 strip = "symbols"
 debug = false
 debug-assertions = false

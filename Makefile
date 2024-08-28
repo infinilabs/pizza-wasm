@@ -1,17 +1,29 @@
 
 
 build:
-	wasm-pack build --release
+	wasm-pack build --dev
 
+release:
+	RUSTFLAGS="-Zlocation-detail=none" wasm-pack build --release
+
+publish:
+	wasm-pack publish
+
+# wasm-opt is a component of the Binaryen toolkit that optimizes WebAssembly modules.
 optimize:
-	wasm-opt -Oz -all --dce pkg/pizza_wasm_bg.wasm -o pkg/pizza-optimized.wasm
-	wasm-snip pkg/pizza_wasm_bg.wasm -o pkg/pizza-snipped.wasm
+	wasm-opt -Oz   pkg/pizza_wasm_bg.wasm -o pkg/pizza_wasm_bg.wasm
+
+# wasm-snip replaces a Wasm function's body with an unreachable instruction.
+snip:
+	wasm-snip pkg/pizza_wasm_bg.wasm -o pkg/pizza_wasm_bg.wasm
 
 inspect:
 	wasm-objdump -x pkg/pizza_wasm_bg.wasm
 
-bloat:
-	cargo bloat --release --target wasm32-unknown-unknown
+analysis:
+	wasm-objdump -d \
+    pkg/pizza_wasm_bg.wasm \
+    | rustfilt | less
 
 twiggy:
 	twiggy top pkg/pizza_wasm_bg.wasm
@@ -46,5 +58,3 @@ init:
 	#mac only
 	brew install wabt
 
-# You can add additional phony targets as needed
-.PHONY: build
