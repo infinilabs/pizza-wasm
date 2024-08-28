@@ -111,16 +111,19 @@ impl Pizza {
         #[cfg(feature = "stemmers")]
         {
             let mut analyzers = HashMap::new();
-            let tokenizer_name = "snowball_english_porter_2";
+            let token_filter_name = "snowball_english_porter_2";
             let tokenizer = StemmerTokenizer::new(algorithms::english_porter_2);
-            builder.register_plugin(tokenizer_name.into(), Box::new(tokenizer));
+            builder.register_analysis_tokenizer(token_filter_name.into(), Box::new(tokenizer));
 
             let mut analyzer = AnalyzerConfig::new();
-            analyzer.set_tokenizer(tokenizer_name);
+            analyzer.set_tokenizer("standard");
             analyzer.add_token_filter("lowercase");
-            analyzers.insert(tokenizer_name, analyzer);
+            analyzer.add_token_filter(token_filter_name.into());
+
+            let analyzer_name="standard_with_english_stemmer";
+            analyzers.insert(analyzer_name, analyzer);
             builder.set_analyzer_configs(analyzers);
-            default_analyzer_name = tokenizer_name
+            default_analyzer_name = analyzer_name
         }
 
         //init jieba
@@ -129,7 +132,7 @@ impl Pizza {
             let mut analyzers = HashMap::new();
             let tokenizer = JiebaTokenizer::new();
             let tokenizer_name = "jieba";
-            builder.register_plugin(tokenizer_name, Box::new(tokenizer));
+            builder.register_analysis_tokenizer(tokenizer_name, Box::new(tokenizer));
             let mut analyzer = AnalyzerConfig::new();
             analyzer.set_tokenizer(tokenizer_name);
             analyzer.add_token_filter("lowercase");

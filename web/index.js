@@ -43,8 +43,10 @@ async function handleInputChange(event) {
     // Call the Wasm search function
     const searchResults = pizza.search_by_query_string(query);
 
+    const jsonString = JSON.stringify(searchResults);
+
     // Display the results on the page
-    resultsElement.innerText = searchResults;
+    resultsElement.innerText = jsonString;
 }
 
 
@@ -64,7 +66,7 @@ async function loadFileAndIndex(url) {
         const fileContent = await response.text();
 
         // Assuming `pizza` is your Wasm module object and it has a `load_text_lines` function
-        const isLoaded = pizza.load_text_lines(fileContent);
+        const isLoaded = pizza.load_json_objects_array(fileContent);
 
         if (isLoaded) {
             console.log(url,' loaded and indexed successfully.');
@@ -77,6 +79,6 @@ async function loadFileAndIndex(url) {
 }
 
 // Example usage:
-const fileUrl = '/assets/recipe_names.csv';
+const fileUrl = '/assets/index.json';
 loadFileAndIndex(fileUrl);
 
