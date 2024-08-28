@@ -4,7 +4,10 @@ build:
 	wasm-pack build --dev
 
 release:
-	RUSTFLAGS="-Zlocation-detail=none" wasm-pack build --release
+	RUSTFLAGS="-Zlocation-detail=none" wasm-pack build -t web --release \
+        --manifest-path ./Cargo.toml \
+        -Z build-std=panic_abort,std -Z build-std-features=panic_immediate_abort
+
 
 publish:
 	wasm-pack publish
