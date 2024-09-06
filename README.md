@@ -2,6 +2,9 @@
 
 INFINI Pizza for WebAssembly is a fully functional search engine that can run entirely in your browser with zero dependencies. Leveraging the power and efficiency of WebAssembly, it offers optimized execution speeds far surpassing traditional JavaScript implementations.
 
+Pizza-wasm is part of the [Pizza](https://github.com/infinilabs/pizza) search engine project, visit [Pizza's site](http://pizza.rs) for more details.
+
+
 ## 🚀 Features
 
 - **Full-Featured Query Engine**: Perform complex searches seamlessly within your browser environment.
