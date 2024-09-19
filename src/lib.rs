@@ -4,13 +4,13 @@ extern crate alloc;
 use alloc::borrow::ToOwned;
 use alloc::boxed::Box;
 use alloc::format;
-use alloc::string::String;
 use alloc::string::ToString;
 use alloc::sync::Arc;
 use alloc::vec::Vec;
 use cfg_if::cfg_if;
 use core::fmt::Display;
 use core::fmt::Formatter;
+use faststr::FastStr;
 use hashbrown::HashMap;
 use pizza_engine as engine;
 use pizza_engine::context::Snapshot;
@@ -52,7 +52,7 @@ cfg_if! {
 
 #[wasm_bindgen]
 pub struct Pizza {
-    engine: Engine<DatTermDict>,
+    engine: Engine,
     snapshot: Snapshot,
     searcher: Searcher,
 }
@@ -197,7 +197,7 @@ impl Pizza {
                 score: None,
                 fields: {
                     let mut m = HashMap::new();
-                    m.insert("title".to_string(), FieldValue::Text(line.to_string()));
+                    m.insert("title".to_string(), FieldValue::Text(FastStr::from(line)));
                     m
                 },
             };
@@ -243,7 +243,7 @@ impl Pizza {
                 // Insert each key-value pair from the JSON object into the fields map
                 for (key, value) in obj.iter() {
                     let field_value = match value {
-                        Value::String(s) => FieldValue::Text(s.clone()),
+                        Value::String(s) => FieldValue::Text(FastStr::from_string(s.to_string())),
                         Value::Number(n) => {
                             if let Some(i) = n.as_i64() {
                                 FieldValue::Integer(i as i32)

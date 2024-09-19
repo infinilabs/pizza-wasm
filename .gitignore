@@ -5,3 +5,4 @@ bin/
 wasm-pack.log
 web/node_modules/
 .idea
+ pkg/README.md

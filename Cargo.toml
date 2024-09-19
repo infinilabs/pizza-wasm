@@ -32,14 +32,15 @@ hashbrown = { version = "0.14",default-features = false, features = ["nightly","
 
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 
-#js-sys = "0.3"
-#web-sys = {version = "0.3",features = ["console"]}
+js-sys = "0.3"
+web-sys = {version = "0.3",features = ["console"]}
 
 cfg-if = "1.0.0"
 wee_alloc = { optional = true,version = "0.4.5" }
 
 serde = { version = "1.0.197", features = ["derive"],default-features = false }
 serde_json = { version = "1.0.115",default-features = false }
+faststr = "0.2.23"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

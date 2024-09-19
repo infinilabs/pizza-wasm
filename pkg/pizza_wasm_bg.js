@@ -179,15 +179,6 @@ export function __wbindgen_json_parse(arg0, arg1) {
     return addHeapObject(ret);
 };
 
-export function __wbindgen_object_drop_ref(arg0) {
-    takeObject(arg0);
-};
-
-export function __wbindgen_number_new(arg0) {
-    const ret = arg0;
-    return addHeapObject(ret);
-};
-
 export function __wbindgen_is_object(arg0) {
     const val = getObject(arg0);
     const ret = typeof(val) === 'object' && val !== null;
@@ -242,6 +233,10 @@ export function __wbg_getRandomValues_3aa56aa6edec874c() { return handleError(fu
     getObject(arg0).getRandomValues(getObject(arg1));
 }, arguments) };
 
+export function __wbindgen_object_drop_ref(arg0) {
+    takeObject(arg0);
+};
+
 export function __wbindgen_is_function(arg0) {
     const ret = typeof(getObject(arg0)) === 'function';
     return ret;
@@ -291,26 +286,6 @@ export function __wbg_call_89af060b4e1523f2() { return handleError(function (arg
     const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
     return addHeapObject(ret);
 }, arguments) };
-
-export function __wbg_getTime_91058879093a1589(arg0) {
-    const ret = getObject(arg0).getTime();
-    return ret;
-};
-
-export function __wbg_getTimezoneOffset_c9929a3cc94500fe(arg0) {
-    const ret = getObject(arg0).getTimezoneOffset();
-    return ret;
-};
-
-export function __wbg_new_7982fb43cfca37ae(arg0) {
-    const ret = new Date(getObject(arg0));
-    return addHeapObject(ret);
-};
-
-export function __wbg_new0_65387337a95cf44d() {
-    const ret = new Date();
-    return addHeapObject(ret);
-};
 
 export function __wbg_buffer_b7b08af79b0b0974(arg0) {
     const ret = getObject(arg0).buffer;
