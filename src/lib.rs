@@ -302,21 +302,22 @@ impl Pizza {
     
         self.search(&query_context)
     }
-    
+
     #[cfg(feature = "query_string")]
-    pub fn search_by_query_string_with_default_operator(&self,query_string: &str, operator: &str,) -> JsValue {
+    pub fn advanced_search_by_query_string(&self, default_field:&str, query_string: &str, operator: &str,from:usize,size:usize,explain:bool) -> JsValue {
         let original_query = OriginalQuery::QueryString(query_string.to_string());
-        
-        let mut query_context = QueryContext::new(original_query, true);
+
+        let mut query_context = QueryContext::new(original_query, explain);
         query_context.support_wildcard_in_field_name=true;
-        
-        if operator.trim().to_lowercase() == "and" {
+        query_context.from = from;
+        query_context.size = size;
+
+        if operator.trim().to_uppercase() == "AND" {
             query_context.default_operator = Operator::And;
         }else {
             query_context.default_operator = Operator::Or;
         }
-        
-        query_context.default_field = "*".into();
+        query_context.default_field = default_field.into();
 
         self.search(&query_context)
     }
