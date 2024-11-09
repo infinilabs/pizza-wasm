@@ -172,6 +172,19 @@ export class Pizza {
         const ret = wasm.pizza_search_by_query_string(this.__wbg_ptr, ptr0, len0);
         return takeObject(ret);
     }
+    /**
+    * @param {string} query_string
+    * @param {string} operator
+    * @returns {any}
+    */
+    search_by_query_string_with_default_operator(query_string, operator) {
+        const ptr0 = passStringToWasm0(query_string, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(operator, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.pizza_search_by_query_string_with_default_operator(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return takeObject(ret);
+    }
 }
 
 export function __wbindgen_json_parse(arg0, arg1) {
