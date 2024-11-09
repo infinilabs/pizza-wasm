@@ -12,7 +12,8 @@ categories = ["web-programming"]
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["wee_alloc","load_json_objects_array","stemmers","query_string"]
+default = []
+#default = ["wee_alloc","load_json_objects_array","stemmers","query_string"]
 jieba=[]
 stemmers=[]
 query_string=[]
@@ -23,7 +24,8 @@ load_json_objects_array=[]
 
 [dependencies]
 pizza-common = { path = "../../lib/common" }
-pizza-engine = { path = "../../lib/engine", default-features = false, features = ["query_string_parser"] }
+pizza-engine = { path = "../../lib/engine", default-features = false, features = [] }
+#pizza-engine = { path = "../../lib/engine", default-features = false, features = ["query_string_parser"] }
 pizza-stemmers = { path = "../../contrib/stemmers" }
 pizza-jieba = { path = "../../contrib/jieba" }
 
@@ -40,7 +42,6 @@ wee_alloc = { optional = true,version = "0.4.5" }
 
 serde = { version = "1.0.197", features = ["derive"],default-features = false }
 serde_json = { version = "1.0.115",default-features = false }
-faststr = "0.2.23"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
@@ -64,9 +65,6 @@ debug = false
 debug-assertions = false
 panic = "abort"
 lto = true
-
-[build]
-target = ["wasm32-unknown-unknown"]
 
 [target.wasm32-unknown-unknown]
 rustflags = ["-C", "target-feature=+simd128"]

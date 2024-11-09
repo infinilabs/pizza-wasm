@@ -10,19 +10,18 @@ use alloc::vec::Vec;
 use cfg_if::cfg_if;
 use core::fmt::Display;
 use core::fmt::Formatter;
-use faststr::FastStr;
 use hashbrown::HashMap;
 use pizza_engine as engine;
 use pizza_engine::context::Snapshot;
 use pizza_engine::dictionary::DatTermDict;
-use pizza_engine::document::Document;
+use pizza_engine::document::{DocID,  DraftDoc};
 use pizza_engine::document::FieldValue;
 use pizza_engine::document::Property;
 use pizza_engine::search::OriginalQuery;
 use pizza_engine::search::QueryContext;
 use pizza_engine::search::Searcher;
 use pizza_engine::store::MemoryStore;
-use pizza_engine::Engine;
+use pizza_engine::{ Engine};
 use pizza_engine::EngineBuilder;
 use spin::RwLock;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -72,7 +71,7 @@ impl Pizza {
             if let Some(hits) = &result.hits {
                 for hit in hits {
                     output.push_str(&format!(
-                        "- Document ID: {}, Score: {:?}, Source: {:?}\n",
+                        "- Document ID: {:?}, Score: {:?}, Source: {:?}\n",
                         hit.id, hit.score, hit.fields
                     ));
                 }
@@ -142,25 +141,15 @@ impl Pizza {
 
         //init schema
         let mut schema = engine::document::Schema::new();
-        schema
-            .properties
-            .add_property("title", Property::as_text(Some(default_analyzer_name)));
-        schema
-            .properties
-            .add_property("content", Property::as_text(Some(default_analyzer_name)));
-        schema
-            .properties
-            .add_property("category", Property::as_text(Some(default_analyzer_name)));
-        schema.properties.add_property(
+        schema.add_property("title", Property::as_text(Some(default_analyzer_name)));
+        schema.add_property("content", Property::as_text(Some(default_analyzer_name)));
+        schema.add_property("category", Property::as_text(Some(default_analyzer_name)));
+        schema.add_property(
             "subcategory",
             Property::as_text(Some(default_analyzer_name)),
         );
-        schema
-            .properties
-            .add_property("tags", Property::as_text(Some(default_analyzer_name)));
-        schema
-            .properties
-            .add_property("url", Property::as_keyword().set_index(false).to_owned()); //42kb
+        schema.add_property("tags", Property::as_text(Some(default_analyzer_name)));
+        schema.add_property("url", Property::as_keyword().set_indexed(false).to_owned()); //42kb
 
         schema.freeze(); //95kb
         builder.set_schema(schema); //95kb
@@ -191,18 +180,10 @@ impl Pizza {
         let mut id = 0;
         for line in data.lines() {
             id += 1;
-            let doc = Document {
-                id: id,
-                key: None,
-                score: None,
-                fields: {
-                    let mut m = HashMap::new();
-                    m.insert("title".to_string(), FieldValue::Text(FastStr::from(line)));
-                    m
-                },
-            };
-
-            writer.add_document(doc);
+            let mut m = HashMap::new();
+            m.insert("title".to_string(), FieldValue::Text(line.clone().into()));
+            let doc=DraftDoc::new_with_id_and_fields(DocID::ID(id), m);
+            writer.create_document(doc).unwrap();
         }
 
         writer.flush();
@@ -243,7 +224,7 @@ impl Pizza {
                 // Insert each key-value pair from the JSON object into the fields map
                 for (key, value) in obj.iter() {
                     let field_value = match value {
-                        Value::String(s) => FieldValue::Text(FastStr::from_string(s.to_string())),
+                        Value::String(s) => FieldValue::Text(s.to_string()),
                         Value::Number(n) => {
                             if let Some(i) = n.as_i64() {
                                 FieldValue::Integer(i as i32)
@@ -260,20 +241,14 @@ impl Pizza {
                     fields.insert(key.clone(), field_value);
                 }
 
-                let doc = Document {
-                    id,
-                    key: None,
-                    score: None,
-                    fields,
-                };
+                // #[cfg(feature = "debug")]
+                // {
+                //     let message = format!("Add document: {:?}", fields.clone());
+                //     web_sys::console::log_1(&message.into());
+                // }
 
-                #[cfg(feature = "debug")]
-                {
-                    let message = format!("Add document: {:?}", doc);
-                    web_sys::console::log_1(&message.into());
-                }
-
-                writer.add_document(doc);
+                let doc=DraftDoc::new_with_id_and_fields(DocID::ID(id), fields);
+                writer.create_document(doc).unwrap();
             } else {
                 let error_message = format!("Expected JSON object, found: {:?}", item);
                 #[cfg(feature = "debug")]
