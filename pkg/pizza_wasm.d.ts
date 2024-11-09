@@ -19,9 +19,13 @@ export class Pizza {
 */
   search_by_query_string(query_string: string): any;
 /**
+* @param {string} default_field
 * @param {string} query_string
 * @param {string} operator
+* @param {number} from
+* @param {number} size
+* @param {boolean} explain
 * @returns {any}
 */
-  search_by_query_string_with_default_operator(query_string: string, operator: string): any;
+  advanced_search_by_query_string(default_field: string, query_string: string, operator: string, from: number, size: number, explain: boolean): any;
 }
