@@ -18,4 +18,10 @@ export class Pizza {
 * @returns {any}
 */
   search_by_query_string(query_string: string): any;
+/**
+* @param {string} query_string
+* @param {string} operator
+* @returns {any}
+*/
+  search_by_query_string_with_default_operator(query_string: string, operator: string): any;
 }
