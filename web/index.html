@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Hello Pizza wasm!</title>
     <style>
+      /* Center the entire content vertically and horizontally */
       body {
         position: absolute;
         top: 0;
@@ -18,18 +19,19 @@
     </style>
   </head>
   <body>
-  <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <!-- Warning for users with JavaScript disabled -->
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    
+    <!-- Main content container -->
     <div style="float: left">
-      <input type="file" id="fileInput" />
-      <br>
-      <button id="fileBtn" >Load File</button>
-
-      <br>
+      <!-- Search input box -->
       <input type="text" id="queryInput" placeholder="Enter your query here">
       <br>
+      <!-- Results display area with pre-formatted text -->
       <pre style="width: 500px" id="results"></pre>
     </div>
 
+    <!-- Load the WASM module and application code -->
     <script src="./bootstrap.js"></script>
   </body>
 </html>
