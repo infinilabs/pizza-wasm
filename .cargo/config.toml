@@ -2,4 +2,8 @@
 target = ["wasm32-unknown-unknown"]
 
 [target.wasm32-unknown-unknown]
-rustflags = ['-C', 'target-feature=+simd128', '--cfg', 'getrandom_backend="wasm_js"']
+# --cfg getrandom_backend="wasm_js" is needed to make `getrandom` work on WASM, see
+# https://docs.rs/getrandom/latest/getrandom/#webassembly-support
+#
+# Use -Zlocation-detail=none to reduce the binary size, see https://github.com/johnthagen/min-sized-rust?tab=readme-ov-file#remove-location-details
+rustflags = ['-C', 'target-feature=+simd128', '--cfg', 'getrandom_backend="wasm_js"', '-Zlocation-detail=none']
