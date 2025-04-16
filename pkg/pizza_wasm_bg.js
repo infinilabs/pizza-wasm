@@ -326,7 +326,7 @@ export function __wbindgen_cb_drop(arg0) {
     return ret;
 };
 
-export function __wbindgen_closure_wrapper280(arg0, arg1, arg2) {
+export function __wbindgen_closure_wrapper281(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 70, __wbg_adapter_16);
     return addHeapObject(ret);
 };
