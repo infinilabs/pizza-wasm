@@ -4,9 +4,10 @@ build:
 	wasm-pack build --dev
 
 release:
-	RUSTFLAGS="-Zlocation-detail=none" wasm-pack build --release \
+	wasm-pack build --release \
         --manifest-path ./Cargo.toml \
-        -Z build-std=panic_abort,std -Z build-std-features=panic_immediate_abort
+        -Z build-std=panic_abort,std \
+		-Z build-std-features=panic_immediate_abort,optimize_for_size
 
 
 publish:
@@ -60,4 +61,6 @@ init:
 	cargo install twiggy
 	#mac only
 	brew install wabt
+	# We build std ourselves in release build
+	rustup component add rust-src --toolchain nightly-2024-10-29
 
