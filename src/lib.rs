@@ -93,6 +93,7 @@ impl Pizza {
 
 #[wasm_bindgen]
 impl Pizza {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Pizza {
         //start with 15kb
         let mut builder = EngineBuilder::new(); //19kb
@@ -110,12 +111,12 @@ impl Pizza {
             let mut analyzers = HashMap::new();
             let token_filter_name = "snowball_english_porter_2";
             let tokenizer = StemmerTokenizer::new(algorithms::english_porter_2);
-            builder.register_analysis_tokenizer(token_filter_name.into(), Box::new(tokenizer));
+            builder.register_analysis_tokenizer(token_filter_name, Box::new(tokenizer));
 
             let mut analyzer = AnalyzerConfig::new();
             analyzer.set_tokenizer("standard");
             analyzer.add_token_filter("lowercase");
-            analyzer.add_token_filter(token_filter_name.into());
+            analyzer.add_token_filter(token_filter_name);
 
             let analyzer_name = "standard_with_english_stemmer";
             analyzers.insert(analyzer_name, analyzer);
@@ -142,34 +143,22 @@ impl Pizza {
         //init schema
         let mut schema = engine::document::Schema::new();
         schema
-            .add_property(
-                "title",
-                Property::as_text(Some(default_analyzer_name)).unwrap(),
-            )
+            .add_property("title", Property::as_text(Some(default_analyzer_name)))
             .unwrap();
         schema
-            .add_property(
-                "content",
-                Property::as_text(Some(default_analyzer_name)).unwrap(),
-            )
+            .add_property("content", Property::as_text(Some(default_analyzer_name)))
             .unwrap();
         schema
-            .add_property(
-                "category",
-                Property::as_text(Some(default_analyzer_name)).unwrap(),
-            )
+            .add_property("category", Property::as_text(Some(default_analyzer_name)))
             .unwrap();
         schema
             .add_property(
                 "subcategory",
-                Property::as_text(Some(default_analyzer_name)).unwrap(),
+                Property::as_text(Some(default_analyzer_name)),
             )
             .unwrap();
         schema
-            .add_property(
-                "tags",
-                Property::as_text(Some(default_analyzer_name)).unwrap(),
-            )
+            .add_property("tags", Property::as_text(Some(default_analyzer_name)))
             .unwrap();
         schema
             .add_property(
@@ -181,7 +170,7 @@ impl Pizza {
         schema.freeze(); //95kb
         builder.set_schema(schema); //95kb
 
-        let engine = builder.build(); //144kb
+        let engine = builder.build().expect("failed to build the engine"); //144kb
         engine.start(); //385kb / 359 on opt-level = 'z' / 347kb on no locales
 
         let searcher = engine.acquire_searcher(); //347kb
