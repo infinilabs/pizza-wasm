@@ -158,11 +158,11 @@ function passStringToWasm0(arg, malloc, realloc) {
     WASM_VECTOR_LEN = offset;
     return ptr;
 }
-function __wbg_adapter_16(arg0, arg1, arg2) {
+function __wbg_adapter_18(arg0, arg1, arg2) {
     wasm.__wbindgen_export_4(arg0, arg1, addHeapObject(arg2));
 }
 
-function __wbg_adapter_33(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_35(arg0, arg1, arg2, arg3) {
     wasm.__wbindgen_export_5(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -264,7 +264,7 @@ export function __wbg_new_23a2665fac83c611(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_33(a, state0.b, arg0, arg1);
+                return __wbg_adapter_35(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -330,8 +330,8 @@ export function __wbindgen_cb_drop(arg0) {
     return ret;
 };
 
-export function __wbindgen_closure_wrapper802(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 128, __wbg_adapter_16);
+export function __wbindgen_closure_wrapper803(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 129, __wbg_adapter_18);
     return addHeapObject(ret);
 };
 
@@ -343,6 +343,11 @@ export function __wbindgen_is_function(arg0) {
 export function __wbindgen_is_undefined(arg0) {
     const ret = getObject(arg0) === undefined;
     return ret;
+};
+
+export function __wbindgen_json_parse(arg0, arg1) {
+    const ret = JSON.parse(getStringFromWasm0(arg0, arg1));
+    return addHeapObject(ret);
 };
 
 export function __wbindgen_object_clone_ref(arg0) {

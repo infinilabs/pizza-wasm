@@ -70,10 +70,12 @@ impl Pizza {
         let result = match result {
             Ok(o) => o,
             Err(e) => {
+                web_sys::console::log_1(&JsValue::from_str("search error"));
                 let error_msg = alloc::format!("Search failed due to: {}", e);
                 wasm_bindgen::throw_str(&error_msg)
             }
         };
+        web_sys::console::log_1(&JsValue::from_str("search completed"));
 
         #[cfg(feature = "debug")]
         {
@@ -95,14 +97,7 @@ impl Pizza {
             web_sys::console::log_1(&output.into());
         }
 
-        let serialized_result = match serde_json::to_string(&result) {
-            Ok(o) => o,
-            Err(e) => {
-                let error_msg = alloc::format!("failed to serialize result due to {}", e);
-                wasm_bindgen::throw_str(&error_msg)
-            }
-        };
-        JsValue::from_str(&serialized_result)
+        JsValue::from_serde(&result).unwrap()
     }
 }
 
