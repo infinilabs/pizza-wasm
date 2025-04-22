@@ -162,7 +162,7 @@ function __wbg_adapter_16(arg0, arg1, arg2) {
     wasm.__wbindgen_export_4(arg0, arg1, addHeapObject(arg2));
 }
 
-function __wbg_adapter_31(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_33(arg0, arg1, arg2, arg3) {
     wasm.__wbindgen_export_5(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -253,6 +253,10 @@ export function __wbg_getRandomValues_21a0191e74d0e1d3() { return handleError(fu
     globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
 }, arguments) };
 
+export function __wbg_log_c222819a41e063d3(arg0) {
+    console.log(getObject(arg0));
+};
+
 export function __wbg_new_23a2665fac83c611(arg0, arg1) {
     try {
         var state0 = {a: arg0, b: arg1};
@@ -260,7 +264,7 @@ export function __wbg_new_23a2665fac83c611(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_31(a, state0.b, arg0, arg1);
+                return __wbg_adapter_33(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -326,8 +330,8 @@ export function __wbindgen_cb_drop(arg0) {
     return ret;
 };
 
-export function __wbindgen_closure_wrapper281(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 70, __wbg_adapter_16);
+export function __wbindgen_closure_wrapper802(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 128, __wbg_adapter_16);
     return addHeapObject(ret);
 };
 
@@ -341,11 +345,6 @@ export function __wbindgen_is_undefined(arg0) {
     return ret;
 };
 
-export function __wbindgen_json_parse(arg0, arg1) {
-    const ret = JSON.parse(getStringFromWasm0(arg0, arg1));
-    return addHeapObject(ret);
-};
-
 export function __wbindgen_object_clone_ref(arg0) {
     const ret = getObject(arg0);
     return addHeapObject(ret);
@@ -353,6 +352,11 @@ export function __wbindgen_object_clone_ref(arg0) {
 
 export function __wbindgen_object_drop_ref(arg0) {
     takeObject(arg0);
+};
+
+export function __wbindgen_string_new(arg0, arg1) {
+    const ret = getStringFromWasm0(arg0, arg1);
+    return addHeapObject(ret);
 };
 
 export function __wbindgen_throw(arg0, arg1) {
