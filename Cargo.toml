@@ -22,10 +22,10 @@ load_text_lines=[]
 load_json_objects_array=[]
 
 [dependencies]
-pizza-common = { git = "https://github.com/infinilabs/pizza-common", rev = "60ff2901bd302777b8c754cfd0bc436fac377838" }
-pizza-engine = { git = "https://github.com/infinilabs/pizza.git", rev = "6bc38ed663779bdfc5b23014d8b488dc6c800172", default-features = false, features = ["query_string_parser"] }
-pizza-stemmers = { git = "https://github.com/infinilabs/pizza-stemmers", rev = "dfe26b161986113ea1b3a1bb106896fc8ac04293", optional = true }
-pizza-jieba = { git = "https://github.com/infinilabs/pizza-jieba", rev = "5406f30e4e6d3dc0fd2f9ef7f0d4fc5f5671d7d5", optional = true }
+pizza-common = { git = "https://github.com/infinilabs/pizza-common" }
+pizza-engine = { git = "https://github.com/infinilabs/pizza.git", default-features = false, features = ["query_string_parser"] }
+pizza-stemmers = { git = "https://github.com/infinilabs/pizza-stemmers", optional = true }
+pizza-jieba = { git = "https://github.com/infinilabs/pizza-jieba", optional = true }
 
 hashbrown = { version = "0.14",default-features = false, features = ["nightly","serde"]  }
 

@@ -65,7 +65,15 @@ pub struct Pizza {
 
 impl Pizza {
     pub fn search(&self, query_context: &QueryContext) -> JsValue {
-        let result = self.searcher.parse_and_query(query_context, &()).unwrap();
+        let result = self.searcher.parse_and_query(query_context, &());
+
+        let result = match result {
+            Ok(o) => o,
+            Err(e) => {
+                let error_msg = alloc::format!("Search failed due to: {}", e);
+                wasm_bindgen::throw_str(&error_msg)
+            }
+        };
 
         #[cfg(feature = "debug")]
         {
@@ -87,7 +95,14 @@ impl Pizza {
             web_sys::console::log_1(&output.into());
         }
 
-        JsValue::from_serde(&result).unwrap()
+        let serialized_result = match serde_json::to_string(&result) {
+            Ok(o) => o,
+            Err(e) => {
+                let error_msg = alloc::format!("failed to serialize result due to {}", e);
+                wasm_bindgen::throw_str(&error_msg)
+            }
+        };
+        JsValue::from_str(&serialized_result)
     }
 }
 
