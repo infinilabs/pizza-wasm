@@ -249,7 +249,7 @@ export function __wbg_call_7cccdd69e0791ae2() { return handleError(function (arg
     return addHeapObject(ret);
 }, arguments) };
 
-export function __wbg_getRandomValues_21a0191e74d0e1d3() { return handleError(function (arg0, arg1) {
+export function __wbg_getRandomValues_3c9c0d586e575a16() { return handleError(function (arg0, arg1) {
     globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
 }, arguments) };
 
@@ -330,7 +330,7 @@ export function __wbindgen_cb_drop(arg0) {
     return ret;
 };
 
-export function __wbindgen_closure_wrapper803(arg0, arg1, arg2) {
+export function __wbindgen_closure_wrapper804(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 129, __wbg_adapter_18);
     return addHeapObject(ret);
 };
