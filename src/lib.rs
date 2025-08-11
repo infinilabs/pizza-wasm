@@ -15,6 +15,7 @@ use alloc::boxed::Box;
 #[cfg(feature = "debug")]
 use alloc::format;
 use alloc::string::ToString;
+use alloc::vec;
 use alloc::vec::Vec;
 use cfg_if::cfg_if;
 use core::fmt::Display;
@@ -26,7 +27,14 @@ use pizza_engine::document::DraftDoc;
 use pizza_engine::document::FieldType;
 use pizza_engine::document::FieldValue;
 use pizza_engine::document::Property;
+use pizza_engine::search::query::BooleanQuery;
+use pizza_engine::search::query::MatchQuery;
+use pizza_engine::search::query::PrefixQuery;
+use pizza_engine::search::query::Query;
+use pizza_engine::search::query::Rewrite;
+use pizza_engine::search::query::Term;
 use pizza_engine::search::OriginalQuery;
+use pizza_engine::search::ParsedQuery;
 use pizza_engine::search::QueryContext;
 use pizza_engine::search::Searcher;
 use pizza_engine::store::MemoryStore;
@@ -64,8 +72,8 @@ pub struct Pizza {
 }
 
 impl Pizza {
-    pub fn search(&self, query_context: &QueryContext) -> JsValue {
-        let result = self.searcher.parse_and_query(query_context, &());
+    pub fn search(&self, query_context: &QueryContext, parsed_query: ParsedQuery) -> JsValue {
+        let result = self.searcher.query(query_context, &parsed_query, &());
 
         let result = match result {
             Ok(o) => o,
@@ -75,7 +83,11 @@ impl Pizza {
                 wasm_bindgen::throw_str(&error_msg)
             }
         };
-        web_sys::console::log_1(&JsValue::from_str("search completed"));
+        let hits_len = result.hits.as_ref().map(|hits| hits.len()).unwrap_or(0);
+        web_sys::console::log_1(&JsValue::from_str(&alloc::format!(
+            "search completed: {}",
+            hits_len
+        )));
 
         #[cfg(feature = "debug")]
         {
@@ -299,14 +311,20 @@ impl Pizza {
 
     #[cfg(feature = "query_string")]
     pub fn search_by_query_string(&self, query_string: &str) -> JsValue {
-        let original_query = OriginalQuery::QueryString(query_string.to_string());
+        if query_string.is_empty() {
+            return JsValue::null();
+        }
 
-        let mut query_context = QueryContext::new(original_query, true);
+        let original_query = OriginalQuery::QueryString(query_string.into());
+        let mut query_context = QueryContext::new(original_query, false);
+
         query_context.support_wildcard_in_field_name = true;
         query_context.default_operator = Operator::Or;
-        query_context.default_field = "*".into();
 
-        self.search(&query_context)
+        // Parse the query
+        let parsed_query = query_string_to_parsed_query(&self.searcher, &query_context);
+
+        self.search(&query_context, parsed_query)
     }
 
     #[cfg(feature = "query_string")]
@@ -319,21 +337,35 @@ impl Pizza {
         size: usize,
         explain: bool,
     ) -> JsValue {
-        let original_query = OriginalQuery::QueryString(query_string.to_string());
+        if query_string.is_empty() {
+            return JsValue::null();
+        }
 
+        let original_query = OriginalQuery::QueryString(query_string.into());
         let mut query_context = QueryContext::new(original_query, explain);
         query_context.support_wildcard_in_field_name = true;
+        // QueryContext::new sets these values to their default value, but we
+        // should use the values passed by users.
         query_context.from = from;
         query_context.size = size;
-
-        if operator.trim().to_uppercase() == "AND" {
-            query_context.default_operator = Operator::And;
-        } else {
-            query_context.default_operator = Operator::Or;
-        }
         query_context.default_field = default_field.into();
+        query_context.default_operator = {
+            let uppercase = operator.trim().to_uppercase();
 
-        self.search(&query_context)
+            if uppercase == "AND" {
+                Operator::And
+            } else if uppercase == "OR" {
+                Operator::Or
+            } else {
+                // default to OR when it is invalid
+                Operator::Or
+            }
+        };
+
+        // Parse the query
+        let parsed_query = query_string_to_parsed_query(&self.searcher, &query_context);
+
+        self.search(&query_context, parsed_query)
     }
 
     // #[cfg(feature = "query_dsl")]
@@ -354,4 +386,106 @@ impl Display for Pizza {
         write!(f, "Pizza Engine (Wasm) v0.1")?;
         Ok(())
     }
+}
+
+fn escape_query_string(query_string: &str) -> alloc::string::String {
+    const ESCAPE_CHARS: &[char] = &[
+        '+', '-', '=', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':',
+        '/',
+    ];
+
+    query_string
+        .chars()
+        .map(|c| if ESCAPE_CHARS.contains(&c) { ' ' } else { c })
+        .collect()
+}
+
+/// Parse the query string stored in `query_context.original_query` to a boolean
+/// should query of `[QueryString, Prefix, Match, MatchPhrase]`.
+///
+/// `query_context` should contain a query string in its `original_query` field.
+fn query_string_to_parsed_query(
+    searcher: &Searcher<MemoryStore>,
+    query_context: &QueryContext,
+) -> ParsedQuery {
+    use alloc::format;
+
+    // Parse query_string in case it is a structured query
+    let mut parsed_query = match searcher
+        .parse(query_context)
+        .expect("query_context should contain original_query")
+    {
+        Ok(pq) => pq,
+        Err(err) => {
+            let error_message = format!("failed to parsing string: {}", err);
+
+            web_sys::console::log_1(&JsValue::from_str(&error_message));
+            wasm_bindgen::throw_str(&error_message)
+        }
+    };
+
+    let raw_query_string = match query_context
+        .original_query
+        .as_ref()
+        .expect("query_context should contain original_query")
+    {
+        OriginalQuery::QueryString(str) => str,
+        _ => unreachable!("the input should be a query string"),
+    };
+    // Escape the character that should not appear in the query because we are
+    // going to treat the whole query string as a single query
+    let query_string = escape_query_string(raw_query_string);
+
+    let field = &query_context.default_field;
+
+    let prefix_query = Query::Prefix(PrefixQuery {
+        field: field.clone(),
+        value: Term::String(query_string.clone()),
+        rewrite: Rewrite::default(),
+        case_insensitive: false,
+    });
+
+    let mut match_query_inner: MatchQuery = {
+        let dsl = format!("{{ \"{field}\": \"{query_string}\"  }}");
+        serde_json::from_str(&dsl).unwrap_or_else(|e| {
+            let error_message = format!("failed to parsing DSL: {}", e);
+
+            web_sys::console::log_1(&JsValue::from_str(&error_message));
+            wasm_bindgen::throw_str(&error_message)
+        })
+    };
+    // These 2 fields should default to the values specified in query_context,
+    // not the value set by Serde.
+    match_query_inner.operator = query_context.default_operator;
+    match_query_inner.cross_fields_strategy = query_context.default_cross_fields_strategy.clone();
+    let match_query = Query::Match(match_query_inner);
+
+    let match_phrase_query = Query::Phrase({
+        let dsl = format!("{{ \"{field}\": \"{query_string}\" }}");
+        serde_json::from_str(&dsl).unwrap_or_else(|e| {
+            let error_message = format!("failed to parsing DSL: {}", e);
+
+            web_sys::console::log_1(&JsValue::from_str(&error_message));
+            wasm_bindgen::throw_str(&error_message)
+        })
+    });
+
+    let query_string_query = parsed_query.query;
+
+    let boolean_query = Query::Boolean(BooleanQuery {
+        minimum_should_match: 0,
+        must: Vec::new(),
+        filter: Vec::new(),
+        must_not: Vec::new(),
+        should: vec![
+            query_string_query,
+            prefix_query,
+            match_query,
+            match_phrase_query,
+        ],
+    });
+
+    parsed_query.query = boolean_query;
+
+    parsed_query
 }
