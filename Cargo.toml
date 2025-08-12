@@ -39,7 +39,7 @@ cfg-if = "1.0.0"
 wee_alloc = { optional = true,version = "0.4.5" }
 
 serde = { version = "1.0.197", features = ["derive"],default-features = false }
-serde_json = { version = "1.0.115",default-features = false }
+serde_json = { version = "1.0.115", default-features = false }
 
 # We do not depend on uuid and getrandom directly, but we need to enable the corresponding 
 # feature to fix the build on WASM
